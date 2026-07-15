@@ -919,10 +919,106 @@ tr:hover td { background: #fafafa; }
   line-height: 1.5;
 }
 
+/* ── OAuth panel ─────────────────────────────────────────────────────────────── */
+.oauth-panel { border-top: 4px solid #ea580c; }
+
+.oauth-concept { border-top: 4px solid #ea580c; }
+.oauth-concept h3 { color: #ea580c; }
+
+.oauth-edu { --edu-accent: #ea580c; --edu-light: #fff7ed; }
+
+.oauth-login-section { display: flex; flex-direction: column; gap: 12px; }
+
+.oauth-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.oauth-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.1s;
+}
+
+.oauth-btn:not(.oauth-btn-disabled):active { transform: scale(0.98); }
+
+.oauth-btn-google {
+  background: white;
+  color: #1a202c;
+}
+.oauth-btn-google:hover { filter: brightness(0.96); }
+
+.oauth-btn-github {
+  background: #24292f;
+  color: white;
+  border-color: #24292f;
+}
+.oauth-btn-github:hover { filter: brightness(1.15); }
+
+.oauth-btn-apple {
+  background: #f8fafc;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+}
+
+.oauth-btn-disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.oauth-btn-tag {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.oauth-btn-tag-paid {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.btn-oauth-secondary {
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #fed7aa;
+}
+.btn-oauth-secondary:not(:disabled):hover { background: #ffedd5; }
+
+/* Apple block special styling */
+.apple-block { border: 1px solid #fde68a; border-radius: 8px; padding: 16px; background: #fffbeb; }
+.apple-block .edu-block-title { color: #92400e; }
+
+/* Three-column layouts */
+.comparison-intro-three { grid-template-columns: 1fr 1fr 1fr; }
+.auth-panels-three { grid-template-columns: 1fr 1fr 1fr; }
+
 /* ── Responsive ─────────────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .comparison-intro-three,
+  .auth-panels-three {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 900px) {
   .comparison-intro,
-  .auth-panels {
+  .comparison-intro-three,
+  .auth-panels,
+  .auth-panels-three {
     grid-template-columns: 1fr;
   }
 }

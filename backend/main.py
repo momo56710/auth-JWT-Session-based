@@ -10,6 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from session_auth import router as session_router
 from jwt_auth import router as jwt_router
+from oauth_auth import router as oauth_router
 
 app = FastAPI(title="Auth Comparison Demo")
 
@@ -26,6 +27,7 @@ app.add_middleware(
 # Mount both routers under different URL prefixes
 app.include_router(session_router, prefix="/session", tags=["Session Auth"])
 app.include_router(jwt_router, prefix="/jwt", tags=["JWT Auth"])
+app.include_router(oauth_router, prefix="/oauth", tags=["OAuth"])
 
 
 @app.get("/")

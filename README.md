@@ -4,16 +4,17 @@ A hands-on, side-by-side comparison of **Session-Based Authentication** and **JW
 
 ## What This Demonstrates
 
-| | Session Auth | JWT + Refresh Token |
-|---|---|---|
-| **Server state** | Full session data stored server-side | Only refresh token JTIs stored |
-| **Request verification** | DB/cache lookup on every request | Cryptographic signature check (zero I/O) |
-| **Horizontal scaling** | Requires a shared session store (e.g. Redis) | Any server with the secret can verify |
-| **Logout / revocation** | Immediate — delete the session entry | Refresh token revoked; access token lives until expiry |
-| **Token transport** | httpOnly cookie (browser automatic) | `Authorization` header (client manages manually) |
-| **XSS risk** | Lower — httpOnly cookie unreadable by JS | Higher if access token stored in `localStorage` |
-| **CSRF risk** | Must use SameSite / CSRF token | Lower — Authorization header not sent automatically |
-| **Best for** | Traditional web apps, monoliths | APIs, SPAs, microservices, mobile clients |
+Three authentication strategies running side by side:
+
+| | Session Auth | JWT + Refresh Token | OAuth 2.0 |
+|---|---|---|---|
+| **Server state** | Full session data stored server-side | Only refresh token JTIs stored | Session created after OAuth exchange |
+| **Request verification** | DB/cache lookup on every request | Cryptographic signature check (zero I/O) | Session lookup (same as session auth) |
+| **Horizontal scaling** | Requires a shared session store | Any server with the secret can verify | Depends on post-OAuth strategy |
+| **Logout / revocation** | Immediate | Refresh token revoked; access token lingers | Immediate (session deleted) |
+| **Password handling** | You store & verify passwords | You store & verify passwords | Provider handles it — you never see it |
+| **Setup complexity** | Simple | Moderate | More setup; Apple costs $99/year |
+| **Best for** | Traditional web apps | APIs, SPAs, microservices | Any app wanting social login |
 
 ---
 
@@ -22,21 +23,24 @@ A hands-on, side-by-side comparison of **Session-Based Authentication** and **JW
 ```
 authentication/
 ├── backend/
-│   ├── main.py            # FastAPI app — mounts both routers with CORS config
+│   ├── main.py            # FastAPI app — mounts all three routers with CORS config
 │   ├── session_auth.py    # Session auth router (/session/*)
 │   ├── jwt_auth.py        # JWT auth router (/jwt/*)
+│   ├── oauth_auth.py      # OAuth 2.0 router (/oauth/google/* and /oauth/github/*)
 │   ├── db.py              # File-based "database" (JSON read/write helpers)
 │   ├── requirements.txt
+│   ├── .env.example       # Copy to .env and fill in OAuth credentials
 │   └── data/
-│       ├── users.json         # User table (shared by both auth systems)
+│       ├── users.json         # User table (shared by all auth systems)
 │       ├── sessions.json      # Session store — watch it change on login/logout
-│       └── refresh_tokens.json # Valid refresh token JTIs — watch it change on login/logout
+│       └── refresh_tokens.json # Valid refresh token JTIs
 └── frontend/
     ├── src/
-    │   ├── App.jsx            # Root component — concept cards + comparison table
+    │   ├── App.jsx            # Root component — concept cards + comparison tables
     │   ├── components/
     │   │   ├── SessionAuth.jsx
-    │   │   └── JwtAuth.jsx
+    │   │   ├── JwtAuth.jsx
+    │   │   └── OAuthAuth.jsx  # Google, GitHub, and Apple explanation
     │   └── styles.css
     ├── index.html
     ├── package.json
@@ -51,6 +55,8 @@ authentication/
 - [FastAPI](https://fastapi.tiangolo.com/) — Python web framework
 - [PyJWT](https://pyjwt.readthedocs.io/) — JWT encoding/decoding
 - [Uvicorn](https://www.uvicorn.org/) — ASGI server
+- [httpx](https://www.python-httpx.org/) — async HTTP client for OAuth token exchanges
+- [python-dotenv](https://pypi.org/project/python-dotenv/) — loads `.env` credentials
 
 **Frontend**
 - [React 18](https://react.dev/) — UI components
@@ -72,6 +78,7 @@ cd backend
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+cp .env.example .env             # fill in GOOGLE_CLIENT_ID etc. (optional — OAuth won't work without it)
 uvicorn main:app --reload
 ```
 
@@ -104,9 +111,64 @@ These are pre-seeded in `backend/data/users.json`:
 
 ---
 
+## OAuth Setup
+
+### Google (Free)
+
+1. Go to [console.cloud.google.com](https://console.cloud.google.com/) → New Project
+2. APIs & Services → OAuth consent screen → External → fill in app name and email → Save
+3. Credentials → Create Credentials → OAuth 2.0 Client ID → Web application
+4. Add `http://localhost:8000/oauth/google/callback` as an authorized redirect URI
+5. Copy the Client ID and Secret into `backend/.env`:
+
+```env
+GOOGLE_CLIENT_ID=123456789-abc.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=GOCSPX-…
+```
+
+### GitHub (Free)
+
+1. GitHub → Settings → Developer Settings → OAuth Apps → New OAuth App
+2. Set Authorization callback URL to `http://localhost:8000/oauth/github/callback`
+3. Generate a client secret (copy it immediately — GitHub only shows it once)
+4. Copy into `backend/.env`:
+
+```env
+GITHUB_CLIENT_ID=Ov23li…
+GITHUB_CLIENT_SECRET=abc123…
+```
+
+### Apple Sign In — Why it costs money
+
+Sign in with Apple requires an **Apple Developer Program membership at $99/year USD**. Unlike Google and GitHub (completely free), there is no free tier — individual developers and organizations pay the same rate. Nonprofits, accredited educational institutions, and government entities can [apply for a fee waiver](https://developer.apple.com/help/account/membership/fee-waivers/).
+
+Beyond the cost, Apple Sign In is the most technically demanding of the three providers:
+
+| Difference | Details |
+|---|---|
+| **No static client_secret** | You download a private key file (`.p8`) and sign a JWT on every token request. The signed JWT expires after 6 months max — you must rotate it. |
+| **No localhost** | Apple rejects `localhost` as a redirect URI for web apps. You need a real HTTPS domain. Use ngrok or a deployed server for local dev. |
+| **Email hiding** | Users can choose "Hide My Email" — Apple provides a randomized relay address (`abc@privaterelay.appleid.com`). You can't use email as a stable identifier; use the `sub` claim instead. |
+| **App Store mandate** | If your iOS/macOS app supports any third-party login (Google, GitHub, etc.), Apple requires you to also offer Sign in with Apple. For web-only apps it's optional. |
+
+**When it's worth it:** If you're already building an iOS or macOS app, you need the $99/year membership anyway to publish on the App Store — so Sign in with Apple comes "for free" relative to that existing cost.
+
+---
+
 ## API Reference
 
 Both routers share the same URL structure under different prefixes.
+
+### OAuth — `/oauth`
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/oauth/google/login` | Redirects browser to Google's consent screen (sets `oauth_state` cookie for CSRF protection) |
+| `GET` | `/oauth/google/callback` | Exchanges code for token, fetches user info, creates a session, redirects to frontend |
+| `GET` | `/oauth/github/login` | Redirects browser to GitHub's authorization page |
+| `GET` | `/oauth/github/callback` | Same flow as Google callback |
+
+After a successful OAuth callback the backend creates a session entry in `sessions.json` identical in structure to a regular session login. The only addition is a `"provider": "google"` or `"provider": "github"` field. This means you can watch `sessions.json` and see OAuth users appear alongside password-based session users.
 
 ### Session Auth — `/session`
 

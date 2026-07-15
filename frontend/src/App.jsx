@@ -1,16 +1,17 @@
 import SessionAuth from './components/SessionAuth'
 import JwtAuth from './components/JwtAuth'
+import OAuthAuth from './components/OAuthAuth'
 
 export default function App() {
   return (
     <div className="app">
       <header className="app-header">
         <h1>Auth Methods Comparison</h1>
-        <p className="subtitle">Session-Based Auth vs JWT with Refresh Tokens — interact with both and watch the difference</p>
+        <p className="subtitle">Session Auth · JWT with Refresh Tokens · OAuth 2.0 — interact with all three and watch the difference</p>
       </header>
 
-      {/* High-level concept cards — before touching anything */}
-      <div className="comparison-intro">
+      {/* High-level concept cards */}
+      <div className="comparison-intro comparison-intro-three">
         <div className="concept-card session-concept">
           <h3>Session Auth</h3>
           <p>
@@ -41,17 +42,34 @@ export default function App() {
             <li className="con">Client must handle token storage and refresh logic</li>
           </ul>
         </div>
+
+        <div className="concept-card oauth-concept">
+          <h3>OAuth 2.0</h3>
+          <p>
+            Delegate authentication to a trusted provider (Google, GitHub, Apple).
+            Your app never sees the user's password. The provider returns an
+            authorization code your server exchanges for an access token and
+            user identity.
+          </p>
+          <ul>
+            <li className="pro">No password storage — provider handles credential security</li>
+            <li className="pro">Users trust familiar providers (no new account needed)</li>
+            <li className="con">Depends on third-parties — provider outage = your login breaks</li>
+            <li className="con">More setup required; Apple Sign In costs $99/year</li>
+          </ul>
+        </div>
       </div>
 
-      {/* The two live demo panels */}
-      <div className="auth-panels">
+      {/* The three live demo panels */}
+      <div className="auth-panels auth-panels-three">
         <SessionAuth />
         <JwtAuth />
+        <OAuthAuth />
       </div>
 
-      {/* Static comparison table at the bottom for quick reference */}
+      {/* Comparison tables */}
       <section className="comparison-table">
-        <h2>Side-by-Side Comparison</h2>
+        <h2>Session vs JWT — Side-by-Side</h2>
         <table>
           <thead>
             <tr>
@@ -100,6 +118,42 @@ export default function App() {
               <td>Best for</td>
               <td>Traditional web apps, monoliths</td>
               <td>APIs, SPAs, microservices, mobile clients</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, margin: '32px 0 16px' }}>OAuth Providers at a Glance</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Provider</th>
+              <th>Cost</th>
+              <th>Works on localhost</th>
+              <th>client_secret type</th>
+              <th>Email always available?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Google</td>
+              <td style={{ color: '#16a34a', fontWeight: 600 }}>Free</td>
+              <td>Yes</td>
+              <td>Static string</td>
+              <td>Yes (always verified)</td>
+            </tr>
+            <tr>
+              <td>GitHub</td>
+              <td style={{ color: '#16a34a', fontWeight: 600 }}>Free</td>
+              <td>Yes</td>
+              <td>Static string</td>
+              <td>Sometimes hidden — need /user/emails fallback</td>
+            </tr>
+            <tr>
+              <td>Apple</td>
+              <td style={{ color: '#b45309', fontWeight: 600 }}>$99 / year</td>
+              <td>No (needs HTTPS domain)</td>
+              <td>Signed JWT (.p8 private key)</td>
+              <td>User can hide it (relay address)</td>
             </tr>
           </tbody>
         </table>
