@@ -80,8 +80,8 @@ code {
 
 /* ── Auth panels ────────────────────────────────────────────────────────────── */
 .auth-panels {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-wrap: wrap;
   gap: 24px;
   margin-bottom: 40px;
   align-items: start;

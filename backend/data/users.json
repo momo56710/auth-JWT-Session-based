@@ -19,5 +19,21 @@
     "role": "user",
     "full_name": "Charlie Durand",
     "created_at": "2024-03-20T11:15:00"
+  },
+  "google_111956566103608434027": {
+    "password": null,
+    "email": "metidjimohamedamine8@gmail.com",
+    "role": "user",
+    "full_name": "Metidji Mohamed amine",
+    "provider": "google",
+    "created_at": "2026-07-15T10:29:41"
+  },
+  "github_momo56710": {
+    "password": null,
+    "email": "mohamedmouh567@gmail.com",
+    "role": "user",
+    "full_name": "momo",
+    "provider": "github",
+    "created_at": "2026-07-15T10:30:15"
   }
 }
