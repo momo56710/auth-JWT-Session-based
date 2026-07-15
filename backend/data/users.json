@@ -1,0 +1,23 @@
+{
+  "alice": {
+    "password": "password123",
+    "email": "alice@example.com",
+    "role": "admin",
+    "full_name": "Alice Dupont",
+    "created_at": "2024-01-15T09:00:00"
+  },
+  "bob": {
+    "password": "secret456",
+    "email": "bob@example.com",
+    "role": "user",
+    "full_name": "Bob Martin",
+    "created_at": "2024-02-03T14:30:00"
+  },
+  "charlie": {
+    "password": "charlie789",
+    "email": "charlie@example.com",
+    "role": "user",
+    "full_name": "Charlie Durand",
+    "created_at": "2024-03-20T11:15:00"
+  }
+}

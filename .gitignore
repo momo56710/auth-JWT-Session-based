@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+backend/.venv/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Editor
+.idea/
+.vscode/
+*.swp
